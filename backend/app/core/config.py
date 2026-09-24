@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     # Auth
     secret_key: str = "change-this-in-production"
     algorithm: str = "HS256"
+    gemini_model: str = "gemini-3.5-flash"
     access_token_expire_minutes: int = 60 * 24  # 1 day
 
     class Config:

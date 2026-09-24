@@ -44,3 +44,8 @@ class HoldingRead(HoldingCreate):
 
     class Config:
         from_attributes = True
+
+
+class SyncFundRequest(BaseModel):
+    symbol: str
+    asset_type: AssetType    
