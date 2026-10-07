@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy import select
+from app.services.fund_sync import get_nav_entries_for_fund
 
 from app.core.database import get_session
 from app.core.security import get_current_user
@@ -78,6 +79,25 @@ async def get_fund_metrics(
         std_deviation=calculate_std_deviation(entries),
         max_drawdown=calculate_max_drawdown(entries),
     )
+
+
+@router.get("/{fund_id}/history")
+async def get_fund_history(
+    fund_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """Returns a fund's full NAV/price history as {date, value} entries, for charting."""
+    fund = await session.get(Fund, fund_id)
+    if not fund:
+        raise HTTPException(status_code=404, detail="Fund not found")
+
+    entries = await get_nav_entries_for_fund(session, fund_id)
+    return {
+        "symbol": fund.symbol,
+        "name": fund.name,
+        "history": [{"date": str(e["date"]), "value": e["value"]} for e in entries],
+    }
 
 
 @router.get("/compare", response_model=List[FundMetrics])

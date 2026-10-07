@@ -99,6 +99,7 @@ async def run_advisor_chat(
     profile: FinancialProfile | None,
     holdings_summary: str,
     message: str,
+    history: list[dict] | None = None,
 ) -> str:
     """
     Sends a user message to Gemini, running the full tool-call loop until
@@ -106,9 +107,13 @@ async def run_advisor_chat(
     """
     client = genai.Client(api_key=settings.gemini_api_key)
 
-    contents: list[types.Content] = [
-        types.Content(role="user", parts=[types.Part.from_text(text=message)])
-    ]
+    contents: list[types.Content] = []
+    if history:
+        for msg in history:
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg["text"])]))
+
+    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=message)]))
 
     config = types.GenerateContentConfig(
         system_instruction=_build_system_instruction(profile, holdings_summary),

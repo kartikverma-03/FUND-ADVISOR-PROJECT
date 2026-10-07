@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy import select
+from google.genai.errors import ServerError
+from fastapi import HTTPException
 
 from app.core.database import get_session
 from app.core.security import get_current_user
@@ -42,12 +44,21 @@ async def chat_with_advisor(
     else:
         holdings_summary = "No holdings recorded yet."
 
-    reply = await run_advisor_chat(
-        session=session,
-        user=current_user,
-        profile=profile,
-        holdings_summary=holdings_summary,
-        message=payload.message,
-    )
+    history = [msg.model_dump() for msg in payload.history] if payload.history else None
+
+    try:
+        reply = await run_advisor_chat(
+            session=session,
+            user=current_user,
+            profile=profile,
+            holdings_summary=holdings_summary,
+            message=payload.message,
+            history=history,
+        )
+    except ServerError:
+        raise HTTPException(
+            status_code=503,
+            detail="The AI advisor is temporarily busy handling high demand. Please try again in a moment.",
+        )
 
     return ChatResponse(reply=reply)
