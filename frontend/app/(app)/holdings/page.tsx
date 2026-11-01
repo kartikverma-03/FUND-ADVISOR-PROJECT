@@ -188,7 +188,7 @@ export default function HoldingsPage() {
         </div>
 
         {/* Right: tools */}
-         <div className="lg:sticky lg:top-6">
+         <div className="lg:sticky lg:top-20">
          <AddHoldingForm funds={funds} onAdded={loadData} />
           </div>
         </div>

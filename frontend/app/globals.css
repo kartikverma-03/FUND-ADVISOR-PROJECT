@@ -2,10 +2,10 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --bg-base: #0a0e14;
-  --bg-surface: #11161f;
-  --bg-surface-hover: #161c28;
-  --border-subtle: #1f2733;
+  --bg-base: #090c12;
+  --bg-surface: #0f141d;
+  --bg-surface-hover: #151b27;
+  --border-subtle: #1c2431;
   --border-default: #2a3442;
   --text-primary: #e8eaed;
   --text-secondary: #8b95a5;
@@ -26,6 +26,7 @@ body {
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -62,4 +63,11 @@ body {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }

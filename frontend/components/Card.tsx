@@ -16,7 +16,7 @@ export default function Card({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      className={`rounded-2xl border p-6 ${className}`}
+      className={`rounded-xl border p-5 ${className}`}
       style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-subtle)" }}
     >
       {children}

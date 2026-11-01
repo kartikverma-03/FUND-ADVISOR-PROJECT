@@ -93,7 +93,7 @@ export default function FundDrawer({
               ))}
             </div>
 
-            <MetricsPanel metrics={metrics} history={slice(history, days)} loading={false} />
+            <MetricsPanel metrics={metrics} history={slice(history, days)} loading={!metrics} />
 
             <p className="text-xs mt-6" style={{ color: "var(--text-secondary)" }}>
               Past performance does not guarantee future results.

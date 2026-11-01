@@ -5,20 +5,26 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { apiFetch } from "@/lib/api"
 import type { Profile, PortfolioSummary } from "@/lib/types"
-import { buildChecks } from "@/lib/health"
+import { buildChecks, assetLabel } from "@/lib/health"
 import AnimatedNumber from "@/components/AnimatedNumber"
 import Card from "@/components/Card"
+import StatTile from "@/components/StatTile"
+import PageHeader from "@/components/PageHeader"
 import AllocationDonut from "@/components/AllocationDonut"
 import HealthChecks from "@/components/HealthChecks"
 import ProfileForm from "@/components/ProfileForm"
 
-type Stat = {
+interface Tile {
   label: string
-  value: number
-  prefix: string
+  n: number
+  decimals: number
+  prefix?: string
   suffix?: string
-  color?: string
+  sub: string
+  tone?: "up" | "down"
 }
+
+const fmt = (v: number) => Math.round(v).toLocaleString()
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -54,25 +60,30 @@ export default function DashboardPage() {
   const cur = profile?.currency ?? "INR"
   const hasPortfolio = !!portfolio && portfolio.total_invested > 0
 
-  const stats: Stat[] = []
+  const tiles: Tile[] = []
   if (portfolio && hasPortfolio) {
     const gainUp = portfolio.overall_gain_loss >= 0
-    const pctUp = portfolio.overall_gain_loss_pct >= 0
-    stats.push(
-      { label: "Invested", value: portfolio.total_invested, prefix: `${cur} ` },
-      { label: "Current value", value: portfolio.total_current_value, prefix: `${cur} ` },
+    const pct = Math.abs(portfolio.overall_gain_loss_pct).toFixed(2)
+    const entries = Object.entries(portfolio.allocation).filter(([, v]) => v > 0)
+    const total = entries.reduce((s, [, v]) => s + v, 0)
+    const top = entries.length ? entries.reduce((a, b) => (b[1] > a[1] ? b : a)) : null
+
+    tiles.push(
+      { label: "Invested", n: portfolio.total_invested, decimals: 2, prefix: `${cur} `, sub: "Total cost basis" },
+      { label: "Current value", n: portfolio.total_current_value, decimals: 2, prefix: `${cur} `, sub: "At latest market prices" },
       {
-        label: "Gain / loss",
-        value: Math.abs(portfolio.overall_gain_loss),
+        label: "Overall P&L",
+        n: Math.abs(portfolio.overall_gain_loss),
+        decimals: 2,
         prefix: `${gainUp ? "+" : "-"}${cur} `,
-        color: gainUp ? "text-emerald-400" : "text-red-400",
+        sub: `${gainUp ? "▲" : "▼"} ${pct}% absolute`,
+        tone: gainUp ? "up" : "down",
       },
       {
-        label: "Return",
-        value: Math.abs(portfolio.overall_gain_loss_pct),
-        prefix: pctUp ? "+" : "-",
-        suffix: "%",
-        color: pctUp ? "text-emerald-400" : "text-red-400",
+        label: "Asset classes",
+        n: entries.length,
+        decimals: 0,
+        sub: top && total > 0 ? `${assetLabel(top[0])} · ${((top[1] / total) * 100).toFixed(0)}% largest` : "",
       }
     )
   }
@@ -95,25 +106,47 @@ export default function DashboardPage() {
     : []
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-8 md:px-10 md:py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-          Your portfolio and financial health at a glance.
-        </p>
-      </div>
+    <div className="max-w-[1400px] mx-auto px-5 py-8 md:px-10 md:py-10">
+      <PageHeader
+        title="Dashboard"
+        subtitle={
+          hasPortfolio && portfolio
+            ? `${Object.keys(portfolio.allocation).length} asset classes · ${profile?.risk_appetite ?? "moderate"} risk profile`
+            : "Your portfolio and financial health at a glance."
+        }
+        actions={
+          <>
+            <Link
+              href="/advisor"
+              className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors hover:border-[var(--accent)]"
+              style={{ borderColor: "var(--border-default)" }}
+            >
+              Ask advisor
+            </Link>
+            <Link
+              href="/holdings"
+              className="px-4 py-2 rounded-lg text-sm font-semibold"
+              style={{ backgroundColor: "var(--accent)", color: "var(--bg-base)" }}
+            >
+              + Add holding
+            </Link>
+          </>
+        }
+      />
 
       {hasPortfolio ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          {stats.map((s, i) => (
-            <Card key={s.label} delay={i * 0.08}>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                {s.label}
-              </p>
-              <p className={`num text-xl font-semibold mt-2 ${s.color ?? ""}`}>
-                <AnimatedNumber value={s.value} decimals={2} prefix={s.prefix} suffix={s.suffix} />
-              </p>
-            </Card>
+          {tiles.map((t, i) => (
+            <StatTile
+              key={t.label}
+              label={t.label}
+              delay={i * 0.08}
+              tone={t.tone}
+              sub={t.sub}
+              value={
+                <AnimatedNumber value={t.n} decimals={t.decimals} prefix={t.prefix} suffix={t.suffix} />
+              }
+            />
           ))}
         </div>
       ) : (
@@ -144,16 +177,12 @@ export default function DashboardPage() {
           </div>
 
           <Card delay={0.45}>
-            <h2 className="text-sm font-medium mb-5" style={{ color: "var(--text-secondary)" }}>
-              Your financial profile
-            </h2>
+            <h2 className="label mb-5">Your financial profile</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
               {profileFields.map((f) => (
                 <div key={f.label}>
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    {f.label}
-                  </p>
-                  <p className={`text-sm mt-1 capitalize ${f.mono ? "num" : ""}`}>{f.value}</p>
+                  <p className="label">{f.label}</p>
+                  <p className={`text-sm mt-1.5 capitalize ${f.mono ? "num" : ""}`}>{f.value}</p>
                 </div>
               ))}
             </div>

@@ -66,6 +66,21 @@ export default function FundsPage() {
     loadFunds()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+     useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get("q")
+    const open = params.get("open")
+    if (q) setQuery(q)
+    if (open) setOpenId(Number(open))
+    const onSearch = (e: Event) => setQuery((e as CustomEvent<string>).detail)
+    const onOpen = (e: Event) => setOpenId((e as CustomEvent<number>).detail)
+    window.addEventListener("fa:search", onSearch)
+    window.addEventListener("fa:open", onOpen)
+    return () => {
+      window.removeEventListener("fa:search", onSearch)
+      window.removeEventListener("fa:open", onOpen)
+    }
+  }, [])
 
   // Fetch metrics + history for every fund once, in parallel
   useEffect(() => {

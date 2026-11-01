@@ -148,7 +148,7 @@ export default function AdvisorPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] md:h-screen">
+    <div className="flex h-[calc(100vh-8.5rem)] md:h-[calc(100vh-3.5rem)]">
       {/* Saved chats column (desktop) */}
       <div
         className="hidden lg:flex w-64 shrink-0 flex-col border-r p-4"

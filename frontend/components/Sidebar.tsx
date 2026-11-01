@@ -52,17 +52,17 @@ export default function Sidebar() {
                 key={href}
                 href={href}
                 className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-                style={{ color: active ? "var(--accent)" : "var(--text-secondary)" }}
+               style={{ color: active ? "var(--text-primary)" : "var(--text-secondary)" }}
               >
                 {active && (
                   <motion.span
                     layoutId="nav-active"
                     className="absolute inset-0 rounded-lg"
-                    style={{ backgroundColor: "var(--accent-soft)" }}
+                    style={{ backgroundColor: "var(--bg-surface-hover)", border: "1px solid var(--border-subtle)" }}
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
-                <Icon size={18} className="relative" />
+                <Icon size={18} className="relative" style={{ color: active ? "var(--accent)" : undefined }} />
                 <span className="relative">{label}</span>
               </Link>
             )
