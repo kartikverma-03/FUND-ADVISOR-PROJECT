@@ -58,3 +58,8 @@ body {
   font-weight: 400;
   letter-spacing: -0.01em;
 }
+.num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}

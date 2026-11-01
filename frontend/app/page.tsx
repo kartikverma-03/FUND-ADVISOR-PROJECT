@@ -884,7 +884,7 @@ export default function LandingPage() {
             <span className="text-sm font-semibold">Fund Advisor</span>
           </div>
           <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
-            Built by Kartik Verma · Multi-fund analyser & AI advisor
+            Multi-fund analyser & AI advisor · Built by Kartik Verma
           </p>
           <a
             href="mailto:kartikverma2006@gmail.com"

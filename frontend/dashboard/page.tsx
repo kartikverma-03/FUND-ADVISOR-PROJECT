@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import AnimatedNumber from "@/components/AnimatedNumber"
 
 interface Profile {
   monthly_income: number;
